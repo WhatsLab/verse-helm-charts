@@ -3,6 +3,7 @@
 
 apiVersion: v2
 type: application
+icon: https://user-images.githubusercontent.com/5221464/205100296-616ad423-0ac8-4a5d-88d4-542464dd0878.png
 
 name: verse
 description: Helm Charts for Verse Platform
