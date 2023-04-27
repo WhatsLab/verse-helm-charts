@@ -47,7 +47,6 @@ jobs:
           done
 
       - name: Upload helm charts to Helm Repo
-        shell: bash
         working-directory: dest
         run: |
           helm repo index --url "https://raw.githubusercontent.com/WhatsLab/verse-helm-charts/${{ env.PAGE_BRANCH }}/" --merge index.yaml .
