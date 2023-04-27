@@ -1,3 +1,6 @@
+## 🌱 Copyright © 2022 Nana Direct. All rights reserved
+## Author: elhussein <elhussein.mohamed@nana.sa>
+
 name: Release Helm Charts
 
 concurrency: release-helm
@@ -9,51 +12,46 @@ on:
     paths-ignore:
       - "**/*.md"
 
+env:
+  PAGE_BRANCH: pages # name of the git branch that contains the helm chart releases
+
 jobs:
-  release:
-    name: Publish helm charts to Helm github pages repo
+  release-helm:
+    name: Publish helm charts to Helm github pages branch
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Helm Charts Repo
+      - name: Checkout Helm Charts Source Repo
         uses: actions/checkout@v3
         with:
           path: "src"
-          fetch-depth: 0
 
-      - name: Checkout Helm Charts Package
+      - name: Checkout Helm Charts Package Repo
         uses: actions/checkout@v3
         with:
-          ref: "pages"
           path: "dest"
-          fetch-depth: 0
+          ref: "${{ env.PAGE_BRANCH }}"
 
       - name: Install Helm
         run: curl -k https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-      - name: Check helm chart templates
+      - name: Package Helm Charts
         run: |
           for name in src/charts/* ; do \
             if [ -d "$name" ]; then \
               helm dependency update $name/ ; \
               helm lint $name/ ; \
-              echo "helm chart templates of '$name' was checked" ; \
+              helm package "$name" -u -d dest ; \
+              echo "helm chart '$name' was packaged" ; \
             fi \
           done
 
-      - name: Package Helm Charts
-        shell: bash
-        run: |
-          for d in src/charts/*/ ; do
-              echo "$d"
-              helm package "$d" -u -d dest
-          done
-
-      - name: Push New Files
+      - name: Upload helm charts to Helm Repo
         shell: bash
         working-directory: dest
         run: |
-          helm repo index --url https://raw.githubusercontent.com/WhatsLab/verse-helm-charts/pages/ --merge index.yaml .
-          git config --global user.name "Helm Updater Bot"
+          helm repo index --url "https://raw.githubusercontent.com/WhatsLab/verse-helm-charts/${{ env.PAGE_BRANCH }}/" --merge index.yaml .
+          git config --global user.name "Helm Updater Action"
           git config --global user.email "github-actions@nana.sa"
           git add --all
           git commit -m "Release helm package from ref: $GITHUB_SHA"

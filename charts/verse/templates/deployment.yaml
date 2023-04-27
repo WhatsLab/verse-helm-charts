@@ -32,7 +32,7 @@ spec:
         {{- toYaml .Values.app.annotations | indent 8 }}
         {{- end }}
       labels: {{ include "verse.labels" . | indent 8 }}
-        roo.sidecar/inject: "true"
+        verse.sidecar/inject: "true"
 
     spec:
       restartPolicy: Always

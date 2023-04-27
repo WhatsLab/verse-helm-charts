@@ -1,3 +1,6 @@
+## 🌱 Copyright © 2022 Nana Direct. All rights reserved
+## Author: elhussein <elhussein.mohamed@nana.sa>
+
 # Patterns to ignore when building packages.
 # This supports shell glob matching, relative path matching, and
 # negation (prefixed with !). Only one pattern per line.

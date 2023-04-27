@@ -2,7 +2,8 @@
 ## Author: elhussein <elhussein.mohamed@nana.sa>
 
 apiVersion: v2
+type: application
+
 name: verse
 description: Helm Charts for Verse Platform
-type: application
 version: 1.0.0
