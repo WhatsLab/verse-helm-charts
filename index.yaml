@@ -2,12 +2,12 @@ apiVersion: v1
 entries:
   verse:
   - apiVersion: v2
-    created: "2023-04-27T09:20:51.147793933Z"
+    created: "2023-04-27T13:53:22.000032527Z"
     description: Helm Charts for Verse Platform
-    digest: 5168aa4495511c31c1b7885236d86f7bfde1b8561b766236bd876bf8f4edb54a
+    digest: 0e338417a2430fb5c005540e3b1737905c2f6bbc633cb6d66731b3ca0c0f7931
     name: verse
     type: application
     urls:
     - https://raw.githubusercontent.com/WhatsLab/verse-helm-charts/pages/verse-1.0.0.tgz
     version: 1.0.0
-generated: "2023-04-27T09:20:51.147147834Z"
+generated: "2023-04-27T13:53:21.999251223Z"
