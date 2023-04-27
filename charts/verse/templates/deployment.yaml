@@ -1,0 +1,137 @@
+## 🌱 Copyright © 2022 Nana Direct. All rights reserved
+## Author: elhussein <elhussein.mohamed@nana.sa>
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: {{ include "release.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{ include "verse.labels" . | indent 4 }}
+
+spec:
+  {{- if not .Values.hpa.enabled }}
+  replicas: {{.Values.replicas }}
+  {{- end }}
+  strategy:
+    type: {{ .Values.app.strategy.type }}
+    {{- if eq .Values.app.strategy.type "RollingUpdate" }}
+    rollingUpdate:
+      maxUnavailable: "25%"
+      maxSurge: "25%"
+    {{- end }}
+
+  selector:
+    matchLabels: {{ include "verse.selector-labels" . | indent 6 }}
+
+  template:
+    metadata:
+      annotations: 
+        deployment.time: {{ now | date "2006-01-02T15:04:05" }}
+        {{- if .Values.app.annotations }}
+        {{- toYaml .Values.app.annotations | indent 8 }}
+        {{- end }}
+      labels: {{ include "verse.labels" . | indent 8 }}
+        roo.sidecar/inject: "true"
+
+    spec:
+      restartPolicy: Always
+      serviceAccountName: {{ include "release.name" . }}
+{{- if .Values.app.security }}
+      securityContext: # pod securityContext
+        fsGroup: 15551
+{{- end }}
+
+      containers:
+        - name: app
+{{- if .Values.app.security }}
+          securityContext: # container securityContext
+            runAsUser: 15551
+            runAsGroup: 15551
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            privileged: false
+            allowPrivilegeEscalation: false
+{{- end }}
+
+          image: {{ .Values.app.image.name }}
+          imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+          {{- if .Values.service.enabled }}
+          ports:
+            - name: http-web-svc
+              protocol: TCP
+              containerPort: {{ .Values.service.containerPort }}
+          {{- end }}
+          {{- if .Values.app.resources }}
+          resources: {{ toYaml .Values.app.resources | indent 12 }}
+          {{- end }}
+          envFrom:
+          {{- if .Values.config }}
+          - configMapRef:
+              name: {{ include "release.name" . }}
+          {{- end }}
+          {{- if .Values.secret.data }}
+          - secretRef:
+              name: {{ include "release.name" . }}
+          {{- end }}
+          env:
+            - name: {{ include "verse.envPrefix" .Values }}NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['env']
+            - name: {{ include "verse.envPrefix" .Values }}METADATA_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app.kubernetes.io/name']
+            - name: {{ include "verse.envPrefix" .Values }}METADATA_SERVICE_VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app.kubernetes.io/version']
+            - name: {{ include "verse.envPrefix" .Values }}METADATA_SERVICE_REVISION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app.kubernetes.io/revision']
+            - name: {{ include "verse.envPrefix" .Values }}METADATA_SERVICE_INSTANCEID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: {{ include "verse.envPrefix" .Values }}CLUSTER_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            {{- if .Values.service.enabled }}
+            - name: {{ include "verse.envPrefix" .Values }}WEB_SERVER_PORT
+              value: {{ .Values.service.containerPort | quote }}
+            {{- end }}
+            - name: {{ include "verse.envPrefix" .Values }}PROBE_SERVER_ENABLED
+              value: {{ .Values.app.probe.enabled | quote }}
+            - name: {{ include "verse.envPrefix" .Values }}PROBE_SERVER_PORT
+              value: {{ .Values.app.probe.containerPort | quote }}
+          {{- if .Values.app.probe.enabled }}
+          startupProbe:                   # Protect slow starting containers
+            httpGet:
+              path: /startup
+              port: {{ .Values.app.probe.containerPort }}
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:                  # To check the health of the Pod
+            httpGet:
+              path: /liveness
+              port: {{ .Values.app.probe.containerPort }}
+              scheme: HTTP
+            initialDelaySeconds: 20
+            failureThreshold: 10
+            successThreshold: 1
+            periodSeconds: 15
+            timeoutSeconds: 5
+          readinessProbe:                 # To check if the Pod is ready to serve traffic or not
+            httpGet:
+              path: /readiness
+              port: {{ .Values.app.probe.containerPort }}
+              scheme: HTTP
+            initialDelaySeconds: 10
+            failureThreshold: 10
+            successThreshold: 1
+            periodSeconds: 15
+            timeoutSeconds: 5
+          {{- end }}

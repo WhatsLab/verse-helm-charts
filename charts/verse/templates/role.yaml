@@ -1,0 +1,14 @@
+## 🌱 Copyright © 2022 Nana Direct. All rights reserved
+## Author: elhussein <elhussein.mohamed@nana.sa>
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+
+metadata:
+  name: {{ include "release.name" . }}
+  namespace: {{ .Release.Namespace }}
+
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "patch"]

@@ -1,0 +1,18 @@
+## 🌱 Copyright © 2022 Nana Direct. All rights reserved
+## Author: elhussein <elhussein.mohamed@nana.sa>
+
+{{- if .Values.config }}
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: {{ include "release.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{ include "verse.config-labels" . | indent 4 }}
+
+immutable: false
+data: 
+{{- range $k, $v := .Values.config }}
+  {{ include "verse.envPrefix" $.Values }}{{ $k }}: {{ $v | quote }}
+{{- end }}
+{{- end }}

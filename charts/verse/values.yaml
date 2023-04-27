@@ -1,0 +1,67 @@
+## 🌱 Copyright © 2022 Nana Direct. All rights reserved
+## Author: elhussein <elhussein.mohamed@nana.sa>
+
+provider: ""
+component: backend
+replicas: 1
+
+app:
+  version: ""
+  envPrefix: "NVERSE" # prefix for environmental variables
+  security: true
+
+  image:
+    name: "" # get from makefile
+    pullPolicy: Never
+
+  strategy:
+    type: "Recreate" # all existing Pods are killed before new ones are created
+
+  probe:
+    enabled: false
+    containerPort: 8181
+
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  resources:
+    {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  annotations: {}
+
+hpa:
+  enabled: false
+  minReplicas: 3
+  maxReplicas: 6
+  cpu: 80
+  mem: 80
+
+service:
+  enabled: false
+  type: LoadBalancer
+  containerPort: 6161
+  port: 0
+  healthCheck: /
+
+ingress:
+  enabled: false
+  type: "gce" # it can be "nginx" or "gce"
+  host: ""
+  path: /*
+  secret: ""
+  allowHttp: false
+
+config: {}
+
+secret:
+  external: false
+  scope: ""
+  refreshInterval: "0" # set to zero to fetch and create it once
+  data: {}

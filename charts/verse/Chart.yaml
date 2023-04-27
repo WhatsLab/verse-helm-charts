@@ -1,0 +1,8 @@
+## 🌱 Copyright © 2022 Nana Direct. All rights reserved
+## Author: elhussein <elhussein.mohamed@nana.sa>
+
+apiVersion: v2
+name: verse
+description: Helm Charts for Verse Platform
+type: application
+version: 1.0.0

@@ -1,0 +1,49 @@
+## 🌱 Copyright © 2022 Nana Direct. All rights reserved
+## Author: elhussein <elhussein.mohamed@nana.sa>
+
+# TODO: check https://keda.sh/ for event base autoscaling
+
+{{- if .Values.hpa.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+
+metadata:
+  name: {{ include "release.name" . }}
+  namespace: {{ .Release.Namespace }}
+
+spec:
+  minReplicas: {{ .Values.hpa.minReplicas }}
+  maxReplicas: {{ .Values.hpa.maxReplicas }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "release.name" . }}
+
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+          type: Utilization
+          averageUtilization: {{ .Values.hpa.cpu }}
+  - type: Resource
+    resource:
+      name: memory
+      target:
+          type: Utilization
+          averageUtilization: {{ .Values.hpa.mem }}
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Pods
+        value: 2
+        periodSeconds: 5
+    scaleDown:
+      stabilizationWindowSeconds: 120
+      policies:
+        - periodSeconds: 60
+          type: Pods
+          value: 2
+{{- end }}
